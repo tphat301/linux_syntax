@@ -1216,3 +1216,175 @@ git checkout -b development gitlab-dltphat301/development
 ```bash
 git pull
 ```
+
+## Cài PostgreSQL trên Linux
+
+### 1. Cài các gói cần thiết
+
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib -y
+```
+
+### 2. Kiểm tra PostgreSQL chạy chưa
+
+```bash
+sudo systemctl status postgresql
+```
+
+### 3. Đăng nhập PostgreSQL
+
+```bash
+sudo -i -u postgres
+psql
+```
+
+### 4. Tạo database + user
+
+```sql
+CREATE DATABASE phat_db;
+
+CREATE USER phat WITH PASSWORD '123456';
+
+ALTER ROLE phat SET client_encoding TO 'utf8';
+ALTER ROLE phat SET timezone TO 'Asia/Ho_Chi_Minh';
+
+GRANT ALL PRIVILEGES ON DATABASE phat_db TO phat;
+
+\l
+\du
+```
+
+- Thoát:
+
+```sql
+exit;
+```
+
+### 5. Cho phép connect từ bên ngoài VPS
+
+```bash
+sudo nano /etc/postgresql/*/main/postgresql.conf
+```
+
+- Tìm tới dòng
+
+```conf
+#listen_addresses = 'localhost'
+```
+
+- Đổi thành
+
+```conf
+listen_addresses = '*'
+```
+
+### 6. Sửa quyền truy cập:
+
+```bash
+sudo nano /etc/postgresql/*/main/pg_hba.conf
+```
+
+- Thêm dòng này vào
+
+```conf
+host    all             all             0.0.0.0/0               md5
+```
+
+- Có thể thay chỗ này bằng ipv4 của VPS
+
+```conf
+host    all             all             <server_id>/32               md5
+```
+
+### 7. Restart PostgreSQL
+
+```bash
+sudo systemctl restart postgresql
+```
+
+### 8. Mở port VPS
+
+```bash
+sudo ufw allow 5432/tcp
+```
+
+- Kiểm tra lại port `postgres`
+
+```bash
+ss -tunlp | grep 5432
+```
+
+### 9. Mở `PgAdmin` để connect tới VPS bằng giao diện
+
+### 10. Cấp full quyền
+
+```sql
+ALTER ROLE golive WITH SUPERUSER;
+```
+
+
+# DEBUG: Cài `WSL` trên window khi cài Docker Desktop
+
+## Các câu lệnh khởi chạy 
+
+```bash
+dism /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+
+dism /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+
+wsl --install -d Ubuntu
+
+wsl --update --web-download
+
+wsl --update --inbox
+```
+
+
+# Cài đặt mongodb local trên máy cá nhân window:
+
+## Chi tiết
+
+
+### Tạo ra đường dẫn như sau
+```bash
+mkdir C:\data\log
+```
+
+### Tải phần mềm mongodb community tại đây: `https://www.mongodb.com/try/download/community` chọn `.msi`
+
+
+### Eviroment trên window và thêm `PATH` vào `C:\Program Files\MongoDB\Server\7.0\bin`
+
+- Lưu ý là tuỳ vào version mà chỉnh sửa directory cho phù hợp
+
+### Sau đó chạy câu lệnh `mongod`
+
+
+# Cài Cassandra DB Local 
+
+## Các bước thực hiện 
+
+### 1. Cài Java tại đây `https://learn.microsoft.com/vi-vn/java/openjdk/download` chọn `.msi` hoặc `.exe` đều được
+
+- Kiểm tra lại OpenJDK Java
+
+```bash
+java -version
+```
+
+
+### 2. Dùng docker desktop kết nối tới cassandra
+
+```bash
+docker run -d -p 9042:9042 cassandra:4.1
+```
+
+- Kết nối tới cassandra 
+
+```bash
+docker exec -it <container_id> cqlsh
+```
+
+
+
