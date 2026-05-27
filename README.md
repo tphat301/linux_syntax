@@ -122,6 +122,17 @@ sudo apt upgrade -y
 lsb_release -a
 ```
 
+## Fix những case treo máy Ubuntu
+
+- Khi boot vào USB Ubuntu -> Gõ phím e -> Xuất hiện màn hình
+- Thêm `nomodeset acpi=off` vào sau `---` là passing
+
+```bash
+linux /casper/vmlinuz --- nomodeset acpi=off
+```
+
+- Nhấn `Ctrl + X` để reboot máy
+
 ## Kiểm tra cấu hình Server
 
 1. Kiểm tra CPU:
@@ -413,7 +424,7 @@ docker exec -it cims_server_container sh
 sudo docker logs -f <ten_docker_container>
 ```
 
-- Chạy docker compose yaml
+- Chạy docker compose
 
 ```bash
 sudo docker compose -f docker-compose.yml up --build -d
@@ -1245,7 +1256,7 @@ psql
 CREATE DATABASE phat_db;
 
 CREATE USER phat WITH PASSWORD '123456';
-
+ALTER USER phat WITH SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS;
 ALTER ROLE phat SET client_encoding TO 'utf8';
 ALTER ROLE phat SET timezone TO 'Asia/Ho_Chi_Minh';
 
@@ -1324,67 +1335,118 @@ ALTER ROLE golive WITH SUPERUSER;
 ```
 
 
-# DEBUG: Cài `WSL` trên window khi cài Docker Desktop
+## VPN (Sercurity Server)
 
-## Các câu lệnh khởi chạy 
+### Phần mềm WireGuard
 
-```bash
-dism /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+1. Cấu hình phần mềm:
 
-dism /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+```conf
+[Interface]
+PrivateKey = <PrivateKey-Local>
+Address = 100.0.0.23/32
+DNS = 8.8.8.8
 
-wsl --install -d Ubuntu
-
-wsl --update --web-download
-
-wsl --update --inbox
+[Peer]
+PublicKey = <PublicKey-Server-VPN>
+AllowedIPs = <Allow-IP1>, <Allow-IP2>, <Allow-IP3>
+Endpoint = 103.205.96.2:51820
+PersistentKeepalive = 15
 ```
 
+2. Chú thích:
 
-# Cài đặt mongodb local trên máy cá nhân window:
+- Khi mở phần mềm `WireGuard` sẽ có `Public key` phần `Key` này sẽ được whitelist bởi nhà cung cấp dịch vụ hoặc đội hạ tầng cấp Server của doanh nghiệp
 
-## Chi tiết
+- ```<Allow-IP1>```: IPv4 này thường sẽ được cấu hình giả sử như lớp mạng 10.0.0.0/24 (tức là phải có luôn prefix length)
 
+- ```<PrivateKey-Local>``` giá trị này thường sẽ random theo từng thiết bị 
 
-### Tạo ra đường dẫn như sau
-```bash
-mkdir C:\data\log
-```
+- ```<PublicKey-Server-VPN>``` sẽ được cung cấp bởi nhà cung cấp dịch vụ hoặc đội hạ tầng cấp Server của doanh nghiệp
 
-### Tải phần mềm mongodb community tại đây: `https://www.mongodb.com/try/download/community` chọn `.msi`
+## Cài đặt Flutter cho MacOS
 
-
-### Eviroment trên window và thêm `PATH` vào `C:\Program Files\MongoDB\Server\7.0\bin`
-
-- Lưu ý là tuỳ vào version mà chỉnh sửa directory cho phù hợp
-
-### Sau đó chạy câu lệnh `mongod`
-
-
-# Cài Cassandra DB Local 
-
-## Các bước thực hiện 
-
-### 1. Cài Java tại đây `https://learn.microsoft.com/vi-vn/java/openjdk/download` chọn `.msi` hoặc `.exe` đều được
-
-- Kiểm tra lại OpenJDK Java
+1. Cài đặt và kiểm tra phiên bản
 
 ```bash
-java -version
+brew install --cask flutter
+flutter --version
 ```
 
-
-### 2. Dùng docker desktop kết nối tới cassandra
+2. Kiểm tra PATH của flutter
 
 ```bash
-docker run -d -p 9042:9042 cassandra:4.1
+which flutter
 ```
 
-- Kết nối tới cassandra 
+- Kết quả phải hiển thị
 
 ```bash
-docker exec -it <container_id> cqlsh
+/opt/homebrew/bin/flutter
 ```
 
+3. Setup flutter doctor
 
+- Phải Dowload Xcode + Simulator + Android Studio và setup các tools cần thiết (HĐH: MacOS)
+
+- Phải Dowload Android Studio và setup các tools cần thiết (HĐH: Window)
+
+- Dowload flutter doctor
+
+```bash
+flutter doctor
+flutter doctor --android-licenses
+```
+
+- Gõ y và nhấn Enter
+
+- Dowload CocoaPods
+
+```bash
+brew install cocoapods
+pod --version
+```
+
+## Lập trình viên Mobile và những công cụ
+
+### Dowload Android Studio (Window / MacOS)
+
+#### Setup 
+
+- Mở Android Studio thao tác như sau: 
+
+```bash
+Android Studio > Settings > Languages & Frameworks > Android SDK
+```
+
+- Vào tab `SDK Tools` và tích chọn
+
+- Bấm `Apply` để cài đặt tools cần thiết cho quá trình lập trình App.
+
+```bash
+Android SDK Command-line Tools
+Android SDK Platform-Tools
+Android SDK Build-Tools
+Android Emulator
+```
+
+### Dowload Xcode + Dowload Simulator (MacOS)
+
+```cmd
+Alt + Shift + 2 (để tiến hành cài virtual tunnel)
+```
+
+### Khởi tạo Flutter
+
+1. Trường hợp đã có tên thư mục dự án rồi
+
+```bash
+flutter create .
+```
+
+2. Hoặc trường hợp chưa có tên thư mục dự án
+
+```bash
+flutter create <ten_du_an>
+```
 
